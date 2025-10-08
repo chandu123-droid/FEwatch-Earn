@@ -5,9 +5,9 @@ export default function Dashboard({ token, logout }) {
   const [ads, setAds] = useState([]);
   const [balance, setBalance] = useState(0);
   const [upi, setUpi] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(null);
 
-  const config = { headers: { Authorization: `Bearer ${token}` } };
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     fetchAds();
@@ -16,7 +16,9 @@ export default function Dashboard({ token, logout }) {
 
   const fetchAds = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/ads`, config);
+      const res = await axios.get(`${BACKEND_URL}/ads`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setAds(res.data);
     } catch (err) {
       console.error(err);
@@ -25,7 +27,9 @@ export default function Dashboard({ token, logout }) {
 
   const fetchBalance = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/balance`, config);
+      const res = await axios.get(`${BACKEND_URL}/balance`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setBalance(res.data.balance);
       setUpi(res.data.upi_id);
     } catch (err) {
@@ -33,54 +37,54 @@ export default function Dashboard({ token, logout }) {
     }
   };
 
-  const watchAd = async (adId) => {
+  const watchAd = async (adId, adReward) => {
     try {
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/watch/${adId}`, {}, config);
-      setMessage(`You earned ₹${res.data.reward}`);
-      fetchBalance();
-    } catch (err) {
-      setMessage(err.response?.data?.error || "Error watching ad");
-    }
-  };
+      setMessage({ type: "info", text: "Watching ad... please wait 30 seconds" });
+      // Start watching
+      await axios.post(`${BACKEND_URL}/watch/${adId}/start`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  const withdraw = async () => {
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/withdraw`,
-        { upi_id: upi },
-        config
-      );
-      setMessage(
-        `Withdrawn! Your share: ₹${res.data.user_share}, Admin share: ₹${res.data.admin_share}`
-      );
-      fetchBalance();
+      // Simulate ad duration
+      setTimeout(async () => {
+        const res = await axios.post(`${BACKEND_URL}/watch/${adId}/complete`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setBalance(prev => prev + res.data.reward);
+        setMessage({ type: "success", text: `You earned ₹${res.data.reward}` });
+      }, 30000); // 30 seconds
     } catch (err) {
-      setMessage(err.response?.data?.error || "Error withdrawing");
+      console.error(err);
+      setMessage({ type: "error", text: "Failed to watch ad" });
     }
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h2>Your Wallet: ₹{balance.toFixed(2)}</h2>
-      <button onClick={logout} style={{ marginBottom: "10px" }}>Logout</button>
+    <div className="dashboard-container">
+      <div className="header">
+        <h2>Your Wallet: ₹{balance.toFixed(2)}</h2>
+        <button onClick={logout}>Logout</button>
+      </div>
 
-      {message && <p style={{ color: "green" }}>{message}</p>}
+      {message && <div className={`message ${message.type}`}>{message.text}</div>}
 
       <h3>Watch Ads & Earn</h3>
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-        {ads.map((ad) => (
-          <div key={ad.id} style={{ border: "1px solid #ccc", padding: "10px", width: "200px" }}>
-            <h4>{ad.name}</h4>
+      <div className="ads-list">
+        {ads.map(ad => (
+          <div key={ad.id} className="ad-box">
+            <h4>{ad.title}</h4>
             <p>{ad.description}</p>
             <p>Reward: ₹{ad.reward}</p>
-            <button onClick={() => watchAd(ad.id)}>Watch & Earn</button>
+            <button onClick={() => watchAd(ad.id, ad.reward)}>Watch & Earn</button>
           </div>
         ))}
       </div>
 
-      <h3>Withdraw via UPI</h3>
-      <p>UPI: {upi}</p>
-      <button onClick={withdraw}>Withdraw</button>
+      <div className="withdraw-section">
+        <h4>Withdraw via Razorpay</h4>
+        <p>{upi}</p>
+        <button>Withdraw</button>
+      </div>
     </div>
   );
 }
