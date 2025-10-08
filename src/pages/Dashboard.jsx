@@ -5,6 +5,7 @@ export default function Dashboard({ token, logout }) {
   const [ads, setAds] = useState([]);
   const [balance, setBalance] = useState(0);
   const [upi, setUpi] = useState("");
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     fetchAds();
@@ -13,7 +14,7 @@ export default function Dashboard({ token, logout }) {
 
   const fetchAds = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/ads", {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/ads`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAds(res.data);
@@ -24,131 +25,81 @@ export default function Dashboard({ token, logout }) {
 
   const fetchBalance = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/balance", {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/balance`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBalance(res.data.balance);
-      setUpi(res.data.upi_id || "");
+      setUpi(res.data.upi_id);
     } catch (err) {
       console.error("Fetch balance error:", err);
     }
   };
 
-  const watchAd = async (adId, reward) => {
+  const watchAd = async (adId) => {
     try {
-      await axios.post(
-        `http://localhost:5000/watch/${adId}`,
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/watch/${adId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setBalance(balance + reward);
-      alert(`You earned ₹${reward}`);
+      setMessage({ type: "success", text: `You earned ₹${res.data.reward}` });
+      fetchBalance();
     } catch (err) {
-      console.error("Watch ad error:", err);
-      alert("Failed to update balance.");
+      console.error(err);
+      setMessage({ type: "error", text: err.response?.data?.error || "Something went wrong" });
     }
   };
 
   const withdraw = async () => {
+    if (balance < 1) {
+      setMessage({ type: "error", text: "Minimum withdrawal ₹1" });
+      return;
+    }
+
     try {
       const res = await axios.post(
-        "http://localhost:5000/withdraw",
-        {},
+        `${import.meta.env.VITE_BACKEND_URL}/withdraw`,
+        { upi_id: upi },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setBalance(0);
-      alert(res.data.message);
+
+      setMessage({ type: "success", text: res.data.message });
+      fetchBalance();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Withdraw failed");
+      setMessage({ type: "error", text: err.response?.data?.error || "Withdrawal failed" });
     }
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <h2>Your Wallet: ₹{balance.toFixed(2)}</h2>
-          {upi && <p>UPI ID: <strong>{upi}</strong></p>}
-        </div>
-        <button
-          onClick={logout}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#f44336",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
+    <div className="dashboard-container">
+      <div className="header">
+        <h2>Your Wallet: ₹{balance.toFixed(2)}</h2>
+        <button onClick={logout}>Logout</button>
       </div>
 
-      <button
-        onClick={withdraw}
-        style={{
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          padding: "10px 20px",
-          margin: "10px 0",
-          cursor: "pointer",
-          borderRadius: "5px",
-        }}
-      >
-        Withdraw
-      </button>
+      {message && <div className={`message ${message.type}`}>{message.text}</div>}
 
       <h3>Watch Ads & Earn</h3>
-      {ads.length === 0 && <p>No ads available</p>}
-
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
+      <div className="ads-list">
         {ads.map((ad) => (
-          <div
-            key={ad.id}
-            style={{
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "15px",
-              width: "300px",
-              boxShadow: "2px 2px 5px rgba(0,0,0,0.1)",
-            }}
-          >
+          <div key={ad.id} className="ad-card">
             <h4>{ad.title}</h4>
             <p>{ad.description}</p>
-
-            {/* Video ad - reward added only after video ends */}
-            {ad.video_url && (
-              <video
-                src={ad.video_url}
-                controls
-                style={{ width: "100%", marginBottom: "10px", borderRadius: "5px" }}
-                onEnded={() => watchAd(ad.id, ad.reward)}
-              />
-            )}
-
-            <p>
-              <strong>Reward: ₹{ad.reward}</strong>
-            </p>
-            {!ad.video_url && (
-              <button
-                onClick={() => watchAd(ad.id, ad.reward)}
-                style={{
-                  backgroundColor: "#2196F3",
-                  color: "white",
-                  border: "none",
-                  padding: "8px 15px",
-                  cursor: "pointer",
-                  borderRadius: "5px",
-                }}
-              >
-                Watch & Earn
-              </button>
-            )}
+            <p>Reward: ₹{ad.reward}</p>
+            <button onClick={() => watchAd(ad.id)}>Watch & Earn</button>
           </div>
         ))}
+      </div>
+
+      <div className="withdraw-section">
+        <h3>Withdraw via Razorpay</h3>
+        <input
+          value={upi}
+          onChange={(e) => setUpi(e.target.value)}
+          placeholder="Your UPI ID"
+        />
+        <button onClick={withdraw}>Withdraw</button>
       </div>
     </div>
   );
