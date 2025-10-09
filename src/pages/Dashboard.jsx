@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "./Dashboard.css"; // make sure this exists
+import "./Dashboard.css";
 
 export default function Dashboard({ token, logout }) {
   const [ads, setAds] = useState([]);
@@ -8,7 +8,7 @@ export default function Dashboard({ token, logout }) {
   const [upi, setUpi] = useState("");
   const [message, setMessage] = useState(null);
 
-  const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
     fetchAds();
@@ -17,7 +17,7 @@ export default function Dashboard({ token, logout }) {
 
   const fetchAds = async () => {
     try {
-      const res = await axios.get(`${API_URL}/ads`, {
+      const res = await axios.get(`${BACKEND_URL}/ads`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAds(res.data);
@@ -28,7 +28,7 @@ export default function Dashboard({ token, logout }) {
 
   const fetchBalance = async () => {
     try {
-      const res = await axios.get(`${API_URL}/balance`, {
+      const res = await axios.get(`${BACKEND_URL}/balance`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBalance(res.data.balance ?? 0);
@@ -38,38 +38,30 @@ export default function Dashboard({ token, logout }) {
     }
   };
 
-  const watchAd = async (adId) => {
+  const handleVideoEnd = async (ad) => {
     try {
-      setMessage({ type: "info", text: "Watching ad... please wait 10 seconds" });
-
-      // Simulate ad duration
-      setTimeout(async () => {
-        try {
-          const res = await axios.post(
-            `${API_URL}/watch/${adId}/complete`,
-            {},
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          setBalance((prev) => prev + res.data.reward);
-          setMessage({ type: "success", text: `You earned ₹${res.data.reward}` });
-        } catch (err) {
-          setMessage({ type: "error", text: "Failed to credit reward" });
-        }
-      }, 10000); // 10 seconds
+      const res = await axios.post(
+        `${BACKEND_URL}/watch/${ad.id}/complete`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert(`You earned ₹${res.data.reward}`);
+      fetchBalance();
     } catch (err) {
-      console.error(err);
-      setMessage({ type: "error", text: "Failed to start ad" });
+      alert(`Failed to watch ad: ${err.response?.data?.error || err.message}`);
     }
   };
 
   const handleWithdraw = async () => {
     try {
       const res = await axios.post(
-        `${API_URL}/withdraw`,
+        `${BACKEND_URL}/withdraw`,
         { upi_id: upi },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert(`User share: ₹${res.data.user_share}, Admin share: ₹${res.data.admin_share}`);
+      alert(
+        `Withdraw Successful!\nUser share: ₹${res.data.user_share}\nAdmin share: ₹${res.data.admin_share}`
+      );
       fetchBalance();
     } catch (err) {
       alert(`Withdraw failed: ${err.response?.data?.error || err.message}`);
@@ -81,27 +73,25 @@ export default function Dashboard({ token, logout }) {
       <div className="wallet-section">
         <h2>Your Wallet: ₹{balance.toFixed(2)}</h2>
         <input
-          style={{ width: "300px" }}
           type="text"
           value={upi}
           onChange={(e) => setUpi(e.target.value)}
           placeholder="Enter your UPI ID"
-          className="upi-input"
         />
-        <button className="btn" onClick={handleWithdraw}>Withdraw</button>
-        <button className="btn" onClick={logout}>Logout</button>
+        <button onClick={handleWithdraw} style={{color:"green"}}>Withdraw</button>
+        <button onClick={logout} style={{color:"red"}}>Logout</button>
       </div>
 
-      {message && <div className={`message ${message.type}`}>{message.text}</div>}
-
-      <h3>Watch Ads & Earn</h3>
       <div className="ads-list">
         {ads.map((ad) => (
           <div key={ad.id} className="ad-card">
-            <h4>{ad.title}</h4>
+            <h3>{ad.title}</h3>
             <p>{ad.description}</p>
+            <video width="320" height="240" controls onEnded={() => handleVideoEnd(ad)}>
+              <source src={ad.video_url} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
             <p>Reward: ₹{ad.reward}</p>
-            <button onClick={() => watchAd(ad.id)}>Watch & Earn</button>
           </div>
         ))}
       </div>
