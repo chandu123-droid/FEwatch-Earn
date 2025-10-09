@@ -1,7 +1,12 @@
+<<<<<<< HEAD
+=======
+/* Container centering */
+>>>>>>> 28f328105fb59a3d837565cc28442659e2c7321d
 .auth-container {
   display: flex;
   justify-content: center;
   align-items: center;
+<<<<<<< HEAD
   height: 100vh;
   background: #f5f5f5;
 }
@@ -55,4 +60,89 @@
   margin-top: 10px;
   cursor: pointer;
   color: #007bff;
+=======
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+
+/* Box for form */
+.auth-box {
+  background-color: #fff;
+  padding: 30px 25px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  text-align: center;
+}
+
+/* Form heading */
+.auth-box h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+/* Input fields */
+.auth-box input {
+  width: 100%;
+  padding: 10px 8px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+}
+
+.auth-box input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Buttons */
+.auth-box button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.auth-box button:hover {
+  background-color: #0056b3;
+}
+
+/* Switch login/register link */
+.switch-link {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Messages */
+.message {
+  margin-bottom: 15px;
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 5px;
+}
+
+.message.error {
+  color: #a94442;
+  background-color: #f2dede;
+  border: 1px solid #ebccd1;
+}
+
+.message.success {
+  color: #3c763d;
+  background-color: #dff0d8;
+  border: 1px solid #d6e9c6;
+>>>>>>> 28f328105fb59a3d837565cc28442659e2c7321d
 }
