@@ -1,0 +1,94 @@
+/* General page styling */
+.dashboard-container {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+h2, h3 {
+  text-align: center;
+  color: #333;
+}
+
+/* Wallet & buttons */
+.wallet-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Specific button colors */
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.withdraw-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+/* Ads styling */
+.ad-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 15px;
+  margin-bottom: 20px;
+  transition: transform 0.2s ease;
+}
+
+.ad-card:hover {
+  transform: translateY(-3px);
+}
+
+.ad-card h4 {
+  margin: 0 0 5px 0;
+  color: #007bff;
+}
+
+.ad-card p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.ad-card video {
+  display: block;
+  margin: 10px 0;
+  border-radius: 6px;
+}
+.dashboard-container { padding: 20px; font-family: Arial, sans-serif; }
+.wallet-section { display: flex; gap: 10px; margin-bottom: 20px; }
+.wallet-section h2 { margin-right: 20px; }
+.btn { padding: 10px 15px; background-color: #4caf50; color: white; border: none; cursor: pointer; border-radius: 5px; }
+.btn:hover { background-color: #45a049; }
+.ads-list { display: flex; flex-wrap: wrap; gap: 15px; }
+.ad-card { border: 1px solid #ccc; padding: 10px; border-radius: 5px; width: 320px; }
+.ad-card h3 { margin-top: 0; }
+.dashboard-container { padding: 20px; font-family: Arial, sans-serif; }
+.wallet-section { display: flex; gap: 10px; margin-bottom: 20px; }
+.wallet-section h2 { margin-right: 20px; }
+.btn { padding: 10px 15px; background-color: #4caf50; color: white; border: none; cursor: pointer; border-radius: 5px; }
+.btn:hover { background-color: #45a049; }
+.ads-list { display: flex; flex-wrap: wrap; gap: 15px; }
+.ad-card { border: 1px solid #ccc; padding: 10px; border-radius: 5px; width: 320px; }
+.ad-card h3 { margin-top: 0; }
+
